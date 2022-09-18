@@ -1,4 +1,0 @@
-# 1.What is SQL?
-    SQL stands for the Structured Query Language. 
-    It is the standard language used to maintain the relational database 
-    and perform many different data manipulation operations on the data. 
