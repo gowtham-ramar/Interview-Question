@@ -1,0 +1,65 @@
+#include <Windows.h>
+#include <iostream>
+
+int main() {
+    HANDLE hPipe;
+    char buffer[1024];
+    DWORD dwRead;
+
+    hPipe = CreateFile(
+        "\\\\.\\pipe\\MyNamedPipe",  // Name of the named pipe (server's pipe name)
+        GENERIC_READ | GENERIC_WRITE,
+        0,
+        NULL,
+        OPEN_EXISTING,
+        0,
+        NULL
+    );
+
+    if (hPipe != INVALID_HANDLE_VALUE) {
+        // Send data to the server
+        const char* dataToSend = "Hello from C++ Client!";
+        WriteFile(hPipe, dataToSend, strlen(dataToSend) + 1, NULL, NULL);
+
+        // Read the response from the server
+        ReadFile(hPipe, buffer, sizeof(buffer), &dwRead, NULL);
+        std::cout << "Server says: " << buffer << std::endl;
+
+        CloseHandle(hPipe);
+    }
+    else {
+        std::cerr << "Failed to connect to named pipe server." << std::endl;
+    }
+
+    return 0;
+}
+
+
+using System;
+using System.IO.Pipes;
+using System.Text;
+
+class NamedPipeServer
+{
+    static void Main()
+    {
+        using (NamedPipeServerStream pipeServer = new NamedPipeServerStream("MyNamedPipe", PipeDirection.InOut))
+        {
+            Console.WriteLine("Waiting for connection...");
+            pipeServer.WaitForConnection();
+
+            using (StreamReader reader = new StreamReader(pipeServer))
+            using (StreamWriter writer = new StreamWriter(pipeServer))
+            {
+                string message = reader.ReadLine();
+                Console.WriteLine("Received: " + message);
+
+                // Process the message and send a response
+                string response = "Message received by C# server!";
+                writer.WriteLine(response);
+                writer.Flush();
+            }
+        }
+    }
+}
+
